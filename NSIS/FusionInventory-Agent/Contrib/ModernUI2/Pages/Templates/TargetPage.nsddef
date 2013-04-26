@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file was created by NSISDialogDesigner 1.1.2.0
+http://coolsoft.altervista.org/nsisdialogdesigner
+Do not edit manually!
+-->
+<Dialog Name="TargetPage" Title="Dialog title..." Subtitle="Dialog subtitle..." Style="none" ExStyle="none">
+  <GroupBox Name="GroupBox1" Location="25, 21" Size="393, 186" Text="Target" TabIndex="0" Style="none" ExStyle="none">
+    <RadioButton Name="RadioButton1" Location="29, 41" Size="77, 24" Text="Local" TabIndex="0" Style="none" ExStyle="none" />
+    <Label Name="Label1" Location="74, 68" Text="Directory" TabIndex="1" Style="none" ExStyle="none" />
+    <DirRequest Name="DirRequest1" Location="141, 68" Size="219, 20" TabIndex="2" Visible="False" Style="none" ExStyle="none" />
+    <RadioButton Name="RadioButton2" Location="29, 108" Size="72, 24" Text="Remote" TabIndex="3" Style="none" ExStyle="none" />
+    <Label Name="Label2" Location="74, 135" Size="49, 23" Text="Server" TabIndex="4" Style="none" ExStyle="none" />
+    <TextBox Name="TextBox1" Location="141, 132" Size="219, 20" TabIndex="5" Style="none" ExStyle="none" />
+  </GroupBox>
+</Dialog>
