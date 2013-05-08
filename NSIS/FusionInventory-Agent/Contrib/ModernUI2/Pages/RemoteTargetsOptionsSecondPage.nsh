@@ -69,6 +69,10 @@ Var hCtl_RemoteTargetsOptionsSecondPage_Password1
 ;--------------------------------
 ; Remote Options Second Page Functions
 
+Function RemoteTargetsOptionsSecondPage_Back
+   Call RemoteTargetsOptionsSecondPage_Leave
+FunctionEnd
+
 Function RemoteTargetsOptionsSecondPage_Create
    ; === RemoteTargetsOptionsSecondPage (type: Dialog) ===
    nsDialogs::Create 1018
@@ -105,15 +109,64 @@ Function RemoteTargetsOptionsSecondPage_Create
    ; === Password1 (type: Password) ===
    ${NSD_CreatePassword} 13u 90u 268u 11u ""
    Pop $hCtl_RemoteTargetsOptionsSecondPage_Password1
+
+	; OnBack Function
+   ${NSD_OnBack} RemoteTargetsOptionsSecondPage_Back
+
+	; Show current options
+   Push $R0
+   Push $R1
+
+	; Set default section
+	StrCpy $R0 "${IOS_GUI}"
+
+	; Proxy server
+   ${ReadINIOption} $R1 "$R0" "${IO_PROXY}"
+   ${NSD_SetText} $hCtl_RemoteTargetsOptionsSecondPage_TextBox1 "$R1"
+
+	; Proxy user
+   ${ReadINIOption} $R1 "$R0" "${IO_USER}"
+   ${NSD_SetText} $hCtl_RemoteTargetsOptionsSecondPage_TextBox2 "$R1"
+
+	; Proxy password
+   ${ReadINIOption} $R1 "$R0" "${IO_PASSWORD}"
+   ${NSD_SetText} $hCtl_RemoteTargetsOptionsSecondPage_Password1 "$R1"
+
+   Pop $R1
+   Pop $R0
 FunctionEnd
 
 
 Function RemoteTargetsOptionsSecondPage_Leave
-   Nop
+   Push $R0
+   Push $R1
+
+	; Set default section
+	StrCpy $R0 "${IOS_GUI}"
+
+   ${NSD_GetText} $hCtl_RemoteTargetsOptionsSecondPage_TextBox1 $R1
+   ${WriteINIOption} "$R0" "${IO_PROXY}" "$R1"
+
+   ${NSD_GetText} $hCtl_RemoteTargetsOptionsSecondPage_TextBox2 $R1
+   ${WriteINIOption} "$R0" "${IO_USER}" "$R1"
+
+   ${NSD_GetText} $hCtl_RemoteTargetsOptionsSecondPage_Password1 $R1
+   ${WriteINIOption} "$R0" "${IO_PASSWORD}" "$R1"
+
+   Pop $R1
+   Pop $R0
 FunctionEnd
 
 
 Function RemoteTargetsOptionsSecondPage_Show
-   Call RemoteTargetsOptionsSecondPage_Create
-   nsDialogs::Show $hCtl_RemoteTargetsOptionsSecondPage
+   Push $R0
+
+	; Don't show the screen unless SERVER was entered
+   ${ReadINIOption} $R0 "${IOS_GUI}" "${IO_SERVER}"
+   ${If} $R0 != ""
+      Call RemoteTargetsOptionsSecondPage_Create
+   	nsDialogs::Show $hCtl_RemoteTargetsOptionsSecondPage
+   ${EndIf}
+
+   Pop $R0
 FunctionEnd
