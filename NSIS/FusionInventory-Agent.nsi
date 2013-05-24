@@ -233,6 +233,7 @@ Var FusionInventoryAgentTaskNetCoreInstalled
 !include "${FIAI_DIR}\Include\Registry.nsh"
 !include "${FIAI_DIR}\Include\SectionFunc.nsh"
 !include "${FIAI_DIR}\Include\WinServicesFunc.nsh"
+!include "${FIAI_DIR}\Include\WinTasksFunc.nsh"
 
 
 ;--------------------------------
@@ -524,6 +525,10 @@ Section "-Init" SecInit
    ; Remove Windows service (be sure)
    ${RemoveFusionInventoryService}
 
+   messageBox MB_OK "EN -Init"
+   ; Remove Windows task (be sure)
+   ${RemoveFusionInventoryTask}
+
    ; Create directories
    ${ReadINIOption} $R0 "${IOS_FINAL}" "${IO_INSTALLDIR}"
    CreateDirectory "$R0"
@@ -632,6 +637,11 @@ Section "-End" SecEnd
    ${If} "$R0" == "${EXECMODE_SERVICE}"
       ${InstallFusionInventoryService}
    ${EndIf}
+
+   ; InstallFusionInventoryTask
+   ${If} "$R0" == "${EXECMODE_TASK}"
+      ${AddFusionInventoryTask}
+   ${EndIf}
 SectionEnd
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
@@ -659,6 +669,10 @@ Section "-un.Init"
 
    ; Remove Windows service
    ${RemoveFusionInventoryService}
+
+   messageBox MB_OK "EN -un.Init"
+   ; Remove Windows task (be sure)
+   ${RemoveFusionInventoryTask}
 
    ; Delete file $R0\fusioninventory-*.bat
    Delete "$R0\fusioninventory-*.bat"
