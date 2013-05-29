@@ -525,7 +525,6 @@ Section "-Init" SecInit
    ; Remove Windows service (be sure)
    ${RemoveFusionInventoryService}
 
-   messageBox MB_OK "EN -Init"
    ; Remove Windows task (be sure)
    ${RemoveFusionInventoryTask}
 
@@ -670,8 +669,7 @@ Section "-un.Init"
    ; Remove Windows service
    ${RemoveFusionInventoryService}
 
-   messageBox MB_OK "EN -un.Init"
-   ; Remove Windows task (be sure)
+   ; Remove Windows task
    ${RemoveFusionInventoryTask}
 
    ; Delete file $R0\fusioninventory-*.bat

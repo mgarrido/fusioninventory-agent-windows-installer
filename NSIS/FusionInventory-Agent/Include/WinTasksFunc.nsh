@@ -49,67 +49,81 @@
 !include "${FIAI_DIR}\Include\INIFunc.nsh"
 
 ; FusionInventoryAgentTaskIsInstalled
-;!macro _FusionInventoryAgentTaskIsInstalled _a _b _t _f
-;  nsExec::ExecTostack "schtasks /query /fo csv /nh"
-;  Pop $0
-;  Pop $1 
-;  ${If} $0 != 0
-;     messageBox MB_OK "schtasks failed: $0: $1"
-;  ${else}
-;     messageBox MB_OK "$1"
-;     ${WordFind3X} "$1" '"' "GPUPDATE" '"'  "#" $R0
-;     messageBox MB_OK "HAY $R0"
-;  ${endif}
-;!macroend
+!macro _FusionInventoryAgentTaskIsInstalled _a _b _t _f
+    ; $R0 Comspec full path
+    ; $R1 String to look for
+    ; $R2 ExecToStack's return value
 
-;!define FusionInventoryAgentTaskIsInstalled `"" FusionInventoryAgentTaskIsInstalled ""`
+    ; Push $R0, $R1, $R2 & $R3 onto the stack
+    Push $R0
+    Push $R1
+    Push $R2
+
+    !insertmacro _LOGICLIB_TEMP
+    ExpandEnvStrings $R0 %COMSPEC%
+    StrCpy $R1 '${PRODUCT_NAME}""'
+    nsExec::ExecToStack '"$R0" /C schtasks /query /fo csv | find /C "$R1"'
+
+    ; Get ExecToStack's return values
+    Pop $R2
+    Pop $_LOGICLIB_TEMP
+
+    ; Pop $R1 & $R0 off of the stack
+    Pop $R1
+    Pop $R0
+
+    !insertmacro _= $_LOGICLIB_TEMP 1 `${_t}` `${_f}`
+!macroend
+
+!define FusionInventoryAgentTaskIsInstalled `"" FusionInventoryAgentTaskIsInstalled ""`
 
 ; RemoveFusionInventoryTask
 !define RemoveFusionInventoryTask "!insertmacro RemoveFusionInventoryTask"
 
 !macro RemoveFusionInventoryTask
 
-    nsExec::ExecTostack 'schtasks /delete /tn "${PRODUCT_NAME}" /f'
-    Pop $0
-    Pop $1 
-    ${If} $0 != 0
-       messageBox MB_OK "schtasks failed deleting task: $0: $1"
-    ${endif}
-
+    ${If} ${FusionInventoryAgentTaskIsInstalled}
+        nsExec::ExecTostack 'schtasks /delete /tn "${PRODUCT_NAME}" /f'
+        Pop $0
+        Pop $1 
+        ${If} $0 != 0
+           messageBox MB_OK "schtasks failed deleting task: $0: $1"
+        ${endif}
+    ${EndIf}
 !macroend
 
 ; AddFusionInventoryTask
 !define AddFusionInventoryTask "Call AddFusionInventoryTask"
 
 Function AddFusionInventoryTask
-   ; $R0 Section from which to read
-   ; $R1 Install directory
-   ; $R2 Time unit for the scheduler (minute, hourly, daily)
-   ; $R3 Time interval
+    ; $R0 Section from which to read
+    ; $R1 Install directory
+    ; $R2 Time unit for the scheduler (minute, hourly, daily)
+    ; $R3 Time interval
 
-   ; Push $R0, $R1, $R2 & $R3 onto the stack
-   Push $R0
-   Push $R1
-   Push $R2
-   Push $R3
+    ; Push $R0, $R1, $R2 & $R3 onto the stack
+    Push $R0
+    Push $R1
+    Push $R2
+    Push $R3
 
-   ; Set the section from which to read
-   StrCpy $R0 "${IOS_FINAL}"
+    ; Set the section from which to read
+    StrCpy $R0 "${IOS_FINAL}"
 
-   ; Get install directory
-   ${ReadINIOption} $R1 "$R0" "${IO_INSTALLDIR}"
+    ; Get install directory
+    ${ReadINIOption} $R1 "$R0" "${IO_INSTALLDIR}"
 
-   ; Get time unit for the scheduler (minute, hourly, daily)
-   ${ReadINIOption} $R2 "$R0" "${IO_TASK-FREQUENCY}"
+    ; Get time unit for the scheduler (minute, hourly, daily)
+    ${ReadINIOption} $R2 "$R0" "${IO_TASK-FREQUENCY}"
 
-   ; Get the time interval
-   ${select} "$R2"
-       ${case} "daily"
-           ${ReadINIOption} $R3 "$R0" "${IO_TASK-DAILY-MODIFIER}"
-       ${case} "hourly"
-           ${ReadINIOption} $R3 "$R0" "${IO_TASK-HOURLY-MODIFIER}"
+    ; Get the time interval
+    ${select} "$R2"
+        ${case} "daily"
+            ${ReadINIOption} $R3 "$R0" "${IO_TASK-DAILY-MODIFIER}"
+        ${case} "hourly"
+            ${ReadINIOption} $R3 "$R0" "${IO_TASK-HOURLY-MODIFIER}"
        ${case} "minute"
-           ${ReadINIOption} $R3 "$R0" "${IO_TASK-MINUTE-MODIFIER}"
+            ${ReadINIOption} $R3 "$R0" "${IO_TASK-MINUTE-MODIFIER}"
     ${endselect}
 
     ; Create scheduled task
