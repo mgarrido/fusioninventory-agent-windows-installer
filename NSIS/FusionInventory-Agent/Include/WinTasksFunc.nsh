@@ -59,6 +59,7 @@
     Push $R1
     Push $R2
 
+    ; Look for task
     !insertmacro _LOGICLIB_TEMP
     ExpandEnvStrings $R0 %COMSPEC%
     StrCpy $R1 '${PRODUCT_NAME}""'
@@ -68,7 +69,8 @@
     Pop $R2
     Pop $_LOGICLIB_TEMP
 
-    ; Pop $R1 & $R0 off of the stack
+    ; Pop $R2, $R1 & $R0 off of the stack
+    Pop $R2
     Pop $R1
     Pop $R0
 
@@ -81,15 +83,23 @@
 !define RemoveFusionInventoryTask "!insertmacro RemoveFusionInventoryTask"
 
 !macro RemoveFusionInventoryTask
+    ; $R0, $R1 ExecToStack's return values
+
+    Push $R0
+    Push $R1
 
     ${If} ${FusionInventoryAgentTaskIsInstalled}
         nsExec::ExecTostack 'schtasks /delete /tn "${PRODUCT_NAME}" /f'
-        Pop $0
-        Pop $1 
-        ${If} $0 != 0
-           messageBox MB_OK "schtasks failed deleting task: $0: $1"
-        ${endif}
+        Pop $R0
+        Pop $R1 
+        ${If} $R0 != 0
+           DetailPrint "Error deleting task. $R0: $R1"
+        ${EndIf}
     ${EndIf}
+
+    ; Pop $R1 & $R0 off of the stack
+    Pop $R1
+    Pop $R0 
 !macroend
 
 ; AddFusionInventoryTask
@@ -100,12 +110,15 @@ Function AddFusionInventoryTask
     ; $R1 Install directory
     ; $R2 Time unit for the scheduler (minute, hourly, daily)
     ; $R3 Time interval
+    ; $R4, $R5 ExecToStack's return values
 
     ; Push $R0, $R1, $R2 & $R3 onto the stack
     Push $R0
     Push $R1
     Push $R2
     Push $R3
+    Push $R4
+    Push $R5
 
     ; Set the section from which to read
     StrCpy $R0 "${IOS_FINAL}"
@@ -117,26 +130,28 @@ Function AddFusionInventoryTask
     ${ReadINIOption} $R2 "$R0" "${IO_TASK-FREQUENCY}"
 
     ; Get the time interval
-    ${select} "$R2"
-        ${case} "daily"
+    ${Select} "$R2"
+        ${Case} "daily"
             ${ReadINIOption} $R3 "$R0" "${IO_TASK-DAILY-MODIFIER}"
-        ${case} "hourly"
+        ${Case} "hourly"
             ${ReadINIOption} $R3 "$R0" "${IO_TASK-HOURLY-MODIFIER}"
-       ${case} "minute"
+       ${Case} "minute"
             ${ReadINIOption} $R3 "$R0" "${IO_TASK-MINUTE-MODIFIER}"
-    ${endselect}
+    ${EndSelect}
 
     ; Create scheduled task
     nsExec::ExecTostack 'schtasks /tn "${PRODUCT_NAME}" /create /ru system \
         /TR "\"${IO_INSTALLDIR}\fusioninventory-agent.bat\"" /sc $R2 /mo $R3'
 
-    Pop $0
-    Pop $1 
-    ${If} $0 != 0
-       messageBox MB_OK "schtasks failed: $0: $1"
-    ${endif}
+    Pop $R4
+    Pop $R5 
+    ${If} $R4 != 0
+           DetailPrint "Error creating task. $R4: $R5"
+    ${EndIf}
 
-    ; Pop $R3, $R2, $R1 & $R0 off of the stack
+    ; Pop $R4, $R4, $R3, $R2, $R1 & $R0 off of the stack
+    Pop $R5
+    Pop $R4
     Pop $R3
     Pop $R2
     Pop $R1

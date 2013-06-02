@@ -50,7 +50,7 @@ declare arch=''
 declare digest=''
 declare basename=''
 declare installer=''
-declare -a -r archs=(x64 x86)
+declare -a -r archs=(x86)
 declare -a -r digests=(md5 sha1 sha256)
 
 declare option_nsis_define=''
