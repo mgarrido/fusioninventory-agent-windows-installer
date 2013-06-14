@@ -640,6 +640,12 @@ Section "-End" SecEnd
    ${If} "$R0" == "${EXECMODE_TASK}"
       ${AddFusionInventoryTask}
    ${EndIf}
+
+   ; Check runnow option
+   ${ReadINIOption} $R0 "${IOS_FINAL}" "${IO_RUNNOW}"
+   ${If} "$R0" == "1"
+      ${RunAgentNow}
+   ${EndIf}
 SectionEnd
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN

@@ -158,4 +158,74 @@ Function AddFusionInventoryTask
     Pop $R0
 FunctionEnd
 
+; RunAgentNow
+!define RunAgentNow "Call RunAgentNow"
+
+Function RunAgentNow
+    ; $R0 Day, Section to read from
+    ; $R1 Month, Installation directory
+    ; $R2 Year
+    ; $R3 Day of week
+    ; $R4 Hour
+    ; $R5 Minute
+    ; $R6 Second
+    ; $R7 Time to schedule job
+    ; $R8, $R9 ExectoStack's return values
+
+
+    ; Push $R0...$R9 onto the stack
+    Push $R0
+    Push $R1
+    Push $R2
+    Push $R3
+    Push $R4
+    Push $R5
+    Push $R6
+    Push $R7
+    Push $R8
+    Push $R9
+
+    ; Get current time
+    ${GetTime} "" "L" $R0 $R1 $R2 $R3 $R4 $R5 $R6
+
+    ; Add 3 minutes to current time
+    IntOp $R5 $R5 + 3
+
+    ${If} $R5 > 59
+        IntOp $R5 $R5 % 60
+        IntOp $R4 $R4 + 1
+        IntOp $R4 $R4 % 24
+    ${EndIf}
+
+    ; Format time
+    StrCpy $R7 "$R4:$R5:$R6"
+
+    ; Set the section from which to read
+    StrCpy $R0 "${IOS_FINAL}"
+
+    ; Get install directory
+    ${ReadINIOption} $R1 "$R0" "${IO_INSTALLDIR}"
+
+    ; Schedule job
+    nsExec::ExecTostack 'at "$R7" "$R1\fusioninventory-agent.bat" -force'
+
+    Pop $R8
+    Pop $R9
+    ${If} $R8 != 0
+           DetailPrint "Error scheduling job. $R8: $R9"
+    ${EndIf}
+
+    ; Pop $R0...$R9 off the stack
+    Pop $R9
+    Pop $R8
+    Pop $R7
+    Pop $R6
+    Pop $R5
+    Pop $R4
+    Pop $R3
+    Pop $R2
+    Pop $R1
+    Pop $R0
+FunctionEnd
+
 !endif
